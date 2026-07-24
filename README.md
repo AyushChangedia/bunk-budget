@@ -1,5 +1,12 @@
 # 🎯 Bunk Budget
 
+### 👉 Live app: **https://bunk-budget.onrender.com**
+
+Just open the link and upload your attendance screenshot — no install, no sign-up.
+*(Hosted on a free tier, so the first load after a while may take ~30s to wake up.)*
+
+---
+
 Upload a screenshot of your college **Self Attendance Report** and find out, per
 subject, how many classes you can skip and still clear the mandatory **80%** —
 or how many you need to attend in a row to claw your way back.
@@ -46,8 +53,8 @@ flag an on-the-line student as failing. The integer forms are exact.
 
 ## For students
 
-Just open the link you were given and upload (or paste) a screenshot of your
-Self Attendance Report. That's it — no install, no terminal, no API key.
+Open **https://bunk-budget.onrender.com** and upload (or paste) a screenshot of
+your Self Attendance Report. That's it — no install, no terminal, no API key.
 
 ## Put it online (owner does this once)
 
