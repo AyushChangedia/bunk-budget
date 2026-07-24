@@ -107,10 +107,21 @@ def test_empty_extraction_422():
     check("no rows -> 422", r.status_code == 422)
 
 
+def test_api_not_shadowed_by_static():
+    # Regression: a catch-all static mount at "/" used to swallow /api/* in
+    # production and return a bare 404. The API must never 404 for that reason.
+    r = _post_image()
+    check("POST /api/analyze not a 404", r.status_code != 404)
+    check("GET /api/health not a 404", client.get("/api/health").status_code != 404)
+    # An unknown path should still be a clean FastAPI 404 (no catch-all serving).
+    unknown = client.get("/definitely-not-a-real-path-xyz")
+    check("unknown path -> 404", unknown.status_code == 404)
+
+
 if __name__ == "__main__":
     for fn in [test_health, test_index_served, test_analyze_happy_path,
                test_null_cells_are_unknown, test_rejects_non_image,
-               test_empty_extraction_422]:
+               test_empty_extraction_422, test_api_not_shadowed_by_static]:
         print(fn.__name__)
         fn()
     print("-" * 50)

@@ -16,8 +16,8 @@ import os
 from pathlib import Path
 
 from dotenv import load_dotenv
-from fastapi import FastAPI, File, HTTPException, UploadFile
-from fastapi.staticfiles import StaticFiles
+from fastapi import FastAPI, File, HTTPException, Response, UploadFile
+from fastapi.responses import FileResponse
 
 from budget import compute_budget, sort_worst_first
 from extract import DEFAULT_MODEL, extract_attendance
@@ -112,6 +112,22 @@ async def analyze(file: UploadFile = File(...)):
     }
 
 
-# Static frontend is served last so it doesn't shadow the /api routes above.
-# html=True makes "/" return static/index.html automatically.
-app.mount("/", StaticFiles(directory=str(STATIC_DIR), html=True), name="static")
+INDEX_HTML = STATIC_DIR / "index.html"
+
+
+@app.get("/", include_in_schema=False)
+async def index():
+    """Serve the single-page frontend.
+
+    We serve this one file explicitly instead of mounting StaticFiles at "/".
+    A catch-all mount at the root can intercept the /api/* routes above (it
+    matches every path and answers with its own bare 404), which showed up in
+    production as uploads failing with "404" while the page itself loaded.
+    An explicit route can never shadow the API.
+    """
+    return FileResponse(INDEX_HTML)
+
+
+@app.get("/favicon.ico", include_in_schema=False)
+async def favicon():
+    return Response(status_code=204)
