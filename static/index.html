@@ -149,6 +149,52 @@
     }
     .again:hover { text-decoration: underline; }
 
+    /* Support / tip jar */
+    .support {
+      text-align: center; margin-top: 42px; padding-top: 24px;
+      border-top: 1px solid var(--line);
+    }
+    .tip-btn {
+      cursor: pointer; font-size: 15px; font-weight: 700; color: #241300;
+      border: none; border-radius: 12px; padding: 11px 20px;
+      background: linear-gradient(135deg, #ffcf7a, #f59e0b);
+      box-shadow: 0 8px 22px rgba(245, 158, 11, .30);
+      transition: transform .06s ease, box-shadow .15s ease;
+    }
+    .tip-btn:hover { transform: translateY(-1px); box-shadow: 0 10px 26px rgba(245, 158, 11, .42); }
+    .tip-btn:active { transform: translateY(0); }
+    .tip-box {
+      margin: 18px auto 0; max-width: 340px;
+      background: var(--card); border: 1px solid var(--line);
+      border-radius: 16px; padding: 20px; box-shadow: var(--shadow);
+    }
+    .tip-box[hidden] { display: none; }
+    .tip-lead { margin: 0 0 14px; font-size: 14px; color: var(--text); }
+    .tip-qr {
+      width: 170px; height: 170px; border-radius: 10px; background: #fff;
+      padding: 8px; display: block; margin: 0 auto 14px;
+    }
+    .tip-upi {
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      margin-bottom: 12px; flex-wrap: wrap;
+    }
+    .tip-upi code {
+      background: var(--bg-soft); border: 1px solid var(--line);
+      border-radius: 8px; padding: 6px 10px; font-size: 13px; color: var(--text);
+    }
+    .copy-btn {
+      cursor: pointer; font-size: 13px; font-weight: 600; color: var(--accent);
+      background: none; border: 1px solid var(--line); border-radius: 8px;
+      padding: 6px 12px; transition: border-color .15s, color .15s;
+    }
+    .copy-btn:hover { border-color: var(--accent); }
+    .tip-pay {
+      display: inline-block; margin-bottom: 10px; font-size: 14px;
+      font-weight: 700; color: var(--accent); text-decoration: none;
+    }
+    .tip-pay:hover { text-decoration: underline; }
+    .tip-note { margin: 4px 0 0; font-size: 12px; color: var(--muted); }
+
     @media (max-width: 560px) {
       .verdict { max-width: 46%; font-size: 13px; }
       .subj { font-size: 15px; }
@@ -201,6 +247,26 @@
         not a guarantee. Always double-check against the official portal.
       </p>
     </div>
+
+    <footer class="support">
+      <button class="tip-btn" id="tipBtn" type="button" aria-expanded="false">
+        ☕ Buy me a chai
+      </button>
+      <div class="tip-box" id="tipBox" hidden>
+        <p class="tip-lead">If Bunk Budget saved your attendance, chip in a chai 🙂</p>
+        <img class="tip-qr" src="data:image/png;base64,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"
+             alt="Scan this UPI QR to pay Ayush" width="170" height="170" />
+        <div class="tip-upi">
+          <code id="upiId">ayushc7711-1@okhdfcbank</code>
+          <button class="copy-btn" id="copyUpi" type="button">Copy</button>
+        </div>
+        <a class="tip-pay"
+           href="upi://pay?pa=ayushc7711-1@okhdfcbank&amp;pn=Ayush&amp;cu=INR">
+          Pay via UPI app
+        </a>
+        <p class="tip-note">Scan the QR on desktop, or tap “Pay via UPI app” on your phone.</p>
+      </div>
+    </footer>
   </div>
 
   <script>
@@ -316,6 +382,25 @@
       const item = [...(e.clipboardData?.items || [])]
         .find(i => i.type.startsWith("image/"));
       if (item) analyze(item.getAsFile());
+    });
+
+    // Support widget: toggle the tip box and copy the UPI id.
+    const tipBtn = $("tipBtn"), tipBox = $("tipBox");
+    tipBtn.addEventListener("click", () => {
+      const opening = tipBox.hasAttribute("hidden");
+      if (opening) tipBox.removeAttribute("hidden");
+      else tipBox.setAttribute("hidden", "");
+      tipBtn.setAttribute("aria-expanded", String(opening));
+    });
+    $("copyUpi").addEventListener("click", async () => {
+      const btn = $("copyUpi");
+      try {
+        await navigator.clipboard.writeText("ayushc7711-1@okhdfcbank");
+        btn.textContent = "Copied ✓";
+      } catch {
+        btn.textContent = "Copy manually";
+      }
+      setTimeout(() => { btn.textContent = "Copy"; }, 1600);
     });
   </script>
 </body>
