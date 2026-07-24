@@ -23,7 +23,11 @@ from groq import Groq
 
 load_dotenv()  # pull GROQ_API_KEY / GROQ_MODEL out of .env
 
-DEFAULT_MODEL = "meta-llama/llama-4-maverick-17b-128e-instruct"
+# Groq's current vision + JSON-mode model. The old Llama 4 vision models
+# (maverick/scout) were deprecated in 2026; qwen3.6-27b is Groq's migration
+# target. Override with GROQ_MODEL if Groq rotates models again — see
+# https://console.groq.com/docs/models for the live list.
+DEFAULT_MODEL = "qwen/qwen3.6-27b"
 
 # The extraction contract. Kept verbose on purpose: portal tables vary, and a
 # vague prompt is where extraction quality goes to die.
