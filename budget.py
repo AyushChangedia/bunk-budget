@@ -29,14 +29,19 @@ def compute_budget(present, total):
     Returns a dict with the current percentage, a status/colour, the numeric
     result, and a human-readable verdict string.
     """
-    p = int(present)
-    t = int(total)
+    try:
+        p = int(present)
+        t = int(total)
+    except (TypeError, ValueError):
+        # OCR handed us a non-numeric / null cell ("-", "N/A", None):
+        # fall through to the guard below and report it as unreadable.
+        p, t = -1, -1
 
-    # Guard against garbage input (empty rows, OCR misreads).
+    # Guard against garbage input (empty rows, OCR misreads, null cells).
     if t <= 0 or p < 0 or p > t:
         return {
-            "present": p,
-            "total": t,
+            "present": max(p, 0),
+            "total": max(t, 0),
             "percentage": 0.0,
             "status": "unknown",
             "color": "grey",
