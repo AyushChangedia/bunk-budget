@@ -1,0 +1,18 @@
+# One-click deploy to Render (free tier). Steps:
+#   1. Push this repo to GitHub.
+#   2. render.com -> New -> Blueprint -> pick this repo.
+#   3. When prompted, paste your GROQ_API_KEY (kept secret, never committed).
+#   4. Deploy. Share the https://<name>.onrender.com URL with students.
+# The free tier sleeps after ~15 min idle, so the first open may take ~30s.
+services:
+  - type: web
+    name: bunk-budget
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: GROQ_API_KEY
+        sync: false          # you set this secret in the Render dashboard
+      - key: PYTHON_VERSION
+        value: "3.11.9"
