@@ -16,6 +16,7 @@ in budget.py, never here.
 import base64
 import json
 import os
+import re
 import sys
 
 from dotenv import load_dotenv
@@ -62,6 +63,26 @@ emit real subject rows.
 """
 
 
+def _extract_json(text: str) -> str:
+    """Return just the JSON object from a model reply, tolerating wrapping.
+
+    Even in JSON mode, reasoning models can leak ``<think>…</think>`` blocks or
+    ```json fences. We strip those and, if needed, fall back to the outermost
+    ``{ … }`` so ``json.loads`` gets clean input.
+    """
+    if not text or not text.strip():
+        raise ValueError("empty response from the model")
+    s = re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL).strip()
+    if s.startswith("```"):
+        s = re.sub(r"^```[a-zA-Z]*\n?", "", s)
+        s = re.sub(r"\n?```$", "", s).strip()
+    if not s.startswith("{"):
+        start, end = s.find("{"), s.rfind("}")
+        if start != -1 and end > start:
+            s = s[start:end + 1]
+    return s
+
+
 def extract_attendance(image_bytes: bytes, mime_type: str = "image/png") -> dict:
     """Send image bytes to the vision model and return the parsed rows dict.
 
@@ -83,6 +104,11 @@ def extract_attendance(image_bytes: bytes, mime_type: str = "image/png") -> dict
         model=model,
         temperature=0,  # deterministic; we want the same read every time
         response_format={"type": "json_object"},  # force valid JSON
+        # qwen3.6-27b is a reasoning model; its <think> tokens otherwise break
+        # JSON mode server-side ("json_validate_failed"). Turn thinking off so
+        # it answers with the JSON object directly. Passed via extra_body so it
+        # works on the pinned SDK whether or not it knows this field natively.
+        extra_body={"reasoning_effort": "none"},
         messages=[
             {"role": "system", "content": SYSTEM_PROMPT},
             {
@@ -97,7 +123,7 @@ def extract_attendance(image_bytes: bytes, mime_type: str = "image/png") -> dict
     )
 
     raw = completion.choices[0].message.content
-    data = json.loads(raw)
+    data = json.loads(_extract_json(raw))
 
     # Normalise: always return {"rows": [...]}, tolerate a bare list.
     rows = data.get("rows", data) if isinstance(data, dict) else data

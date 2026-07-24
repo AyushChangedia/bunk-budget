@@ -15,6 +15,7 @@ import sys
 from fastapi.testclient import TestClient
 
 import main
+from extract import _extract_json
 
 # The rows the real screenshot should yield (subject/type/present/total).
 FAKE_ROWS = {
@@ -107,6 +108,25 @@ def test_empty_extraction_422():
     check("no rows -> 422", r.status_code == 422)
 
 
+def test_extract_json_tolerates_reasoning():
+    # Regression: qwen3.6-27b can wrap JSON in <think> blocks or ``` fences.
+    import json as _json
+    samples = [
+        '{"rows": []}',
+        '<think>reading table</think>\n{"rows": []}',
+        '```json\n{"rows": []}\n```',
+        'Here you go:\n{"rows": []}\ndone',
+    ]
+    ok = all(_json.loads(_extract_json(s)) == {"rows": []} for s in samples)
+    check("_extract_json strips think/fences/prose", ok)
+    raised = False
+    try:
+        _extract_json("  ")
+    except ValueError:
+        raised = True
+    check("_extract_json rejects empty", raised)
+
+
 def test_api_not_shadowed_by_static():
     # Regression: a catch-all static mount at "/" used to swallow /api/* in
     # production and return a bare 404. The API must never 404 for that reason.
@@ -121,7 +141,8 @@ def test_api_not_shadowed_by_static():
 if __name__ == "__main__":
     for fn in [test_health, test_index_served, test_analyze_happy_path,
                test_null_cells_are_unknown, test_rejects_non_image,
-               test_empty_extraction_422, test_api_not_shadowed_by_static]:
+               test_empty_extraction_422, test_extract_json_tolerates_reasoning,
+               test_api_not_shadowed_by_static]:
         print(fn.__name__)
         fn()
     print("-" * 50)
