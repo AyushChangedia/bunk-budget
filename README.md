@@ -83,7 +83,7 @@ docker build -t bunk-budget .
 docker run -p 8000:8000 -e GROQ_API_KEY=your_key bunk-budget
 ```
 
-Whatever host you pick, set **`GROQ_API_KEY`** in its environment/secrets — do
+Whatever host you pick, set ** `GROQ_API_KEY` ** in its environment/secrets — do
 not commit it.
 
 ## Run it locally (development)
