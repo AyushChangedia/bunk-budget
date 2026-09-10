@@ -3,7 +3,7 @@
 ### 👉 Live app: **https://bunk-budget.onrender.com**
 
 Just open the link and upload your attendance screenshot — no install, no sign-up.
-*(Hosted on a free tier, so the first load after a while may take ~30s to wake up.)*
+*(Hosted on a free tier , so the first load after a while may take ~30s to wake up.)*
 
 ---
 
