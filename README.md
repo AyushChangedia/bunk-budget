@@ -44,9 +44,9 @@ For a row with `present = p`, `total = t`:
 
 | Question | Exact integer form |
 |---|---|
-| At/above 80%? | `5·p ≥ 4·t` |
-| Skips still allowed | `(5·p) // 4 − t` |
-| Attend-in-a-row to recover | `4·t − 5·p` |
+| At/above 80%?  | `5·p ≥ 4·t` |
+| Skips still allowed  | `(5·p) // 4 − t` |
+| Attend-in-a-row to recover  | `4·t − 5·p` |
 
 Floats lie here: `floor(4 / 0.8) == 4` in Python (not 5), which would wrongly
 flag an on-the-line student as failing. The integer forms are exact.
