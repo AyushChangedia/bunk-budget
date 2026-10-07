@@ -1,0 +1,8 @@
+# Keep the function small: none of this is imported at runtime, and a fat
+# bundle is a slow cold start — which is the thing this deploy is meant to
+# avoid in the first place.
+test_app.py
+Dockerfile
+.dockerignore
+render.yaml
+README.md
