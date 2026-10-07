@@ -11,7 +11,6 @@ import importlib
 import json
 import os
 import subprocess
-import sys
 from pathlib import Path
 
 import pytest
@@ -102,27 +101,27 @@ def test_the_index_path_is_absolute():
 
 # --------------------------------------------------------- the entry point --
 
-def test_vercel_handler_exports_the_same_app():
-    sys.path.insert(0, str(ROOT / "api"))
-    import index
-
+def test_main_exports_an_asgi_app_at_the_repository_root():
+    # Vercel's FastAPI preset looks for the ASGI application here. A handler
+    # under api/ is not needed, and a rewrite pointing at one is actively
+    # wrong: it sends every request to the literal path "/api/index", which
+    # is not a route, so the app answers its own 404 for the whole site.
     import main
 
-    assert index.app is main.app
+    assert callable(main.app)
+    assert (ROOT / "main.py").is_file()
 
 
-def test_vercel_json_routes_everything_to_the_one_function():
+def test_vercel_json_does_not_rewrite_the_path_away():
     config = json.loads((ROOT / "vercel.json").read_text())
-    rewrites = config["rewrites"]
-    assert any(r["source"] == "/(.*)" for r in rewrites), rewrites
-    assert all(r["destination"] == "/api/index" for r in rewrites)
+    assert "rewrites" not in config, config.get("rewrites")
 
 
 def test_the_function_has_room_to_read_a_screenshot():
     # The analyze route waits on a vision model. A function cut off at the
     # default limit turns a slow read into a platform error with nothing in it.
     config = json.loads((ROOT / "vercel.json").read_text())
-    function = config["functions"]["api/index.py"]
+    function = config["functions"]["main.py"]
     assert function["maxDuration"] >= 60
     assert function["memory"] >= 1024
 
