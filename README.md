@@ -1,6 +1,9 @@
 # 🎯 Bunk Budget
 
-### 👉 Live app: **https://bunk-budget.onrender.com**
+### 👉 Live app: **https://bunk-budget-pink.vercel.app**
+
+<sub>Also on Render at <https://bunk-budget.onrender.com> — same app, but the
+free tier sleeps when idle, so the first open waits ~30s for a container.</sub>
 
 Just open the link and upload your attendance screenshot — no install, no sign-up.
 *(Hosted on a free tier , so the first load after a while may take ~30s to wake up.)*
@@ -53,7 +56,7 @@ flag an on-the-line student as failing. The integer forms are exact.
 
 ## For students
 
-Open **https://bunk-budget.onrender.com** and upload (or paste) a screenshot of
+Open **https://bunk-budget-pink.vercel.app** and upload (or paste) a screenshot of
 your Self Attendance Report. That's it — no install, no terminal, no API key.
 
 ## Put it online (owner does this once)
@@ -65,17 +68,18 @@ exposed to the browser. One deploy serves both the API and the frontend.
 **Vercel (free, no cold-start wait)**
 
 1. [vercel.com](https://vercel.com) → **Add New → Project** → import this repo.
-2. Framework preset: **Other**. Nothing else to configure — `vercel.json` and
-   `api/index.py` are committed.
+2. Framework preset: **FastAPI** (auto-detected). Nothing else to configure —
+   `vercel.json` is committed.
 3. Add `GROQ_API_KEY` as an environment variable (free from
    <https://console.groq.com>), then **redeploy** — Vercel does not apply a new
    variable to a deployment that already exists.
 4. Share the `https://<name>.vercel.app` URL.
 
-Vercel's Python runtime serves the ASGI app that `api/index.py` exports, and
-`vercel.json` routes every path to it, since this is one application rather
-than a page per file. The function gets 60 seconds, because reading a
-screenshot means waiting on a vision model.
+Vercel detects the FastAPI preset and serves the ASGI app in `main.py` itself,
+so there is no handler file and no rewrite — a rewrite to a fixed destination
+sends every URL to that one path, and the app answers its own 404 for the whole
+site. `vercel.json` only sets what zero-config cannot know: the function gets
+60 seconds, because reading a screenshot means waiting on a vision model.
 
 *If the domain answers `500 FUNCTION_INVOCATION_FAILED`,* open `/api/health` —
 it works even when an upload does not:
