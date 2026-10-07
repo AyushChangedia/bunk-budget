@@ -62,7 +62,31 @@ Students shouldn't run anything. You deploy the app once to a host, set your
 Groq key there, and share the URL. The key stays on the server and is never
 exposed to the browser. One deploy serves both the API and the frontend.
 
-**Render (free, recommended)**
+**Vercel (free, no cold-start wait)**
+
+1. [vercel.com](https://vercel.com) → **Add New → Project** → import this repo.
+2. Framework preset: **Other**. Nothing else to configure — `vercel.json` and
+   `api/index.py` are committed.
+3. Add `GROQ_API_KEY` as an environment variable (free from
+   <https://console.groq.com>), then **redeploy** — Vercel does not apply a new
+   variable to a deployment that already exists.
+4. Share the `https://<name>.vercel.app` URL.
+
+Vercel's Python runtime serves the ASGI app that `api/index.py` exports, and
+`vercel.json` routes every path to it, since this is one application rather
+than a page per file. The function gets 60 seconds, because reading a
+screenshot means waiting on a vision model.
+
+*If the domain answers `500 FUNCTION_INVOCATION_FAILED`,* open `/api/health` —
+it works even when an upload does not:
+
+| What `/api/health` says | What it means |
+| --- | --- |
+| `"groq_key_set": false` | The variable is missing from this deployment. Add it and **redeploy**. |
+| `"ok": true` with the key set | The app is fine; check the function log for the real failure. |
+| The page itself 500s | The function could not import at all. The log names the module. |
+
+**Render (free, one-click blueprint)**
 
 1. Push this repo to GitHub.
 2. [render.com](https://render.com) → **New → Blueprint** → pick this repo
@@ -71,7 +95,8 @@ exposed to the browser. One deploy serves both the API and the frontend.
    <https://console.groq.com>).
 4. Deploy → share the `https://<name>.onrender.com` URL.
 
-The free tier sleeps after ~15 min idle, so the first open can take ~30s.
+The free tier sleeps after ~15 min idle, so the first open can take ~30s. That
+wait is the one thing Vercel avoids; everything else about Render is simpler.
 
 **Anywhere else (Docker)**
 
