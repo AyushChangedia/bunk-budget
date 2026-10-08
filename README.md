@@ -51,8 +51,9 @@ For a row with `present = p`, `total = t`:
 | Skips still allowed  | `(5·p) // 4 − t` |
 | Attend-in-a-row to recover  | `4·t − 5·p` |
 
-Floats lie here: `floor(4 / 0.8) == 4` in Python (not 5), which would wrongly
-flag an on-the-line student as failing. The integer forms are exact.
+Floats lie here: the float version of the recover formula, `math.ceil((0.8 * 3 - 2) / 0.2)`,
+returns 3 in Python because `0.8 * 3` is `2.4000000000000004`. A student on 2/3 actually
+needs only 2 more classes (4/5 = 80%). The integer forms are exact.
 
 ## For students
 

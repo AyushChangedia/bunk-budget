@@ -20,15 +20,15 @@ import re
 import sys
 
 from dotenv import load_dotenv
-from groq import Groq
+from groq import Groq, NotFoundError
 
 load_dotenv()  # pull GROQ_API_KEY / GROQ_MODEL out of .env
 
-# Groq's current vision + JSON-mode model. The old Llama 4 vision models
-# (maverick/scout) were deprecated in 2026; qwen3.6-27b is Groq's migration
-# target. Override with GROQ_MODEL if Groq rotates models again — see
-# https://console.groq.com/docs/models for the live list.
-DEFAULT_MODEL = "qwen/qwen3.6-27b"
+# Groq's current vision + JSON-mode model (Oct 2026). Groq rotates vision
+# models: Llama 4 maverick/scout went first, then qwen3.6-27b stopped
+# resolving ("model_not_found"). Override with GROQ_MODEL if it rotates again;
+# see https://console.groq.com/docs/vision for the live list.
+DEFAULT_MODEL = "qwen/qwen3.8-27b"
 
 # The extraction contract. Kept verbose on purpose: portal tables vary, and a
 # vague prompt is where extraction quality goes to die.
@@ -100,27 +100,37 @@ def extract_attendance(image_bytes: bytes, mime_type: str = "image/png") -> dict
     b64 = base64.b64encode(image_bytes).decode("utf-8")
     data_url = f"data:{mime_type};base64,{b64}"
 
-    completion = client.chat.completions.create(
-        model=model,
-        temperature=0,  # deterministic; we want the same read every time
-        response_format={"type": "json_object"},  # force valid JSON
-        # qwen3.6-27b is a reasoning model; its <think> tokens otherwise break
-        # JSON mode server-side ("json_validate_failed"). Turn thinking off so
-        # it answers with the JSON object directly. Passed via extra_body so it
-        # works on the pinned SDK whether or not it knows this field natively.
-        extra_body={"reasoning_effort": "none"},
-        messages=[
-            {"role": "system", "content": SYSTEM_PROMPT},
-            {
-                "role": "user",
-                "content": [
-                    {"type": "text",
-                     "text": "Extract the attendance table from this screenshot."},
-                    {"type": "image_url", "image_url": {"url": data_url}},
-                ],
-            },
-        ],
-    )
+    def _complete(model_id):
+        return client.chat.completions.create(
+            model=model_id,
+            temperature=0,  # deterministic; we want the same read every time
+            response_format={"type": "json_object"},  # force valid JSON
+            # qwen3.x-27b is a reasoning model; its <think> tokens otherwise break
+            # JSON mode server-side ("json_validate_failed"). Turn thinking off so
+            # it answers with the JSON object directly. Passed via extra_body so it
+            # works on the pinned SDK whether or not it knows this field natively.
+            extra_body={"reasoning_effort": "none"},
+            messages=[
+                {"role": "system", "content": SYSTEM_PROMPT},
+                {
+                    "role": "user",
+                    "content": [
+                        {"type": "text",
+                         "text": "Extract the attendance table from this screenshot."},
+                        {"type": "image_url", "image_url": {"url": data_url}},
+                    ],
+                },
+            ],
+        )
+
+    try:
+        completion = _complete(model)
+    except NotFoundError:
+        # A GROQ_MODEL set in the host's env can outlive the model itself.
+        # Fall back to the default once instead of failing every upload.
+        if model == DEFAULT_MODEL:
+            raise
+        completion = _complete(DEFAULT_MODEL)
 
     raw = completion.choices[0].message.content
     data = json.loads(_extract_json(raw))
